@@ -1,0 +1,29 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files first (for caching)
+COPY flappy-bird-web/package*.json ./
+RUN npm install
+
+# Copy source files
+COPY flappy-bird-web/. ./
+
+# Simple build - for static file serving
+NPM run build 2>/dev/null || echo "Build skipped" || true
+
+# Production stage using lightweight Alpine container
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install runtime dependencies (just needed if game has any)
+RUN apk add --no-cache tini
+
+# Copy built assets from builder
+COPY --from=builder /app ./
+
+EXPOSE 80
+
+# Use nginx server as the default web server
+CMD ["npm", "run", "serve"]

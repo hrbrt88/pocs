@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  flappy-bird:
+    build: .
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 3s
+      timeout: 2s
+      retries: 3
