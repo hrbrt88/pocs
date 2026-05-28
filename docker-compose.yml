@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+   flappy-mk64-game:
+      image: flappy-bird-mk64-nginx
+      container_name: mk64-flappy-bird-game
+      ports:
+         - "8080:80"    # Map to host port 8080 for easy access
+      volumes:
+         - ./flappy-bird-web:/usr/share/nginx/html   # Deploy static assets from the game directory
+      restart: always
+      
+      # Alternative deployment option (if you prefer containerized nginx server):
+      command: ["nginx", "-g", "daemon off;"]
