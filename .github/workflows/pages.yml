@@ -1,27 +1,19 @@
-name: Deploy Flappy Bird MK64 Multiplayer Game to GitHub Pages 🐦🏎️
+name: Deploy Flappy Bird MK64 to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
-permissions:
-  contents: read
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
       
-        uses: actions/checkout@v2
-        
-      - name: Build and Publish to GitHub Pages 🚀
-        
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        
         with:
           publish_dir: ./flappy-bird-web
-          
           github_token: ${{ github.token }}
