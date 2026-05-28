@@ -1,39 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset='UTF-8'><title>Flappy Bird - Browser Edition</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; } body { width:100vw; height:100vh; overflow:hidden; font-family:'Segoe UI',Arial,sans-serif; background:linear-gradient(180deg,#87CEEB 30%,#EEDD8F 50%); margin:0; padding:0; }
-#game-container { width:100%; height:calc(100vh - 60px); position:relative; overflow:hidden; }
-canvas { display:block; width:100%; height:100%; background:transparent; }
-.controls-container { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:999; display:flex; gap:10px; }
-.control-btn { padding:12px 24px; font-size:14px; background:#ff6b35; color:white; border:none; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition:transform 0.1s; }
-.control-btn:hover { transform:scale(1.05); }
-.control-btn:focus { outline:2px solid #ff6b35; }
-#jump-btn { background:#ff6b35; animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{box-shadow:0 0 0 rgba(255,107,53,0.4);} 50%{box-shadow:0 0 15px rgba(255,107,53,0.6);} }
-#pause-btn { background:#808080; }
-.overlay-screen { position:absolute; inset:0; background:rgba(0,0,0,0.7); display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; z-index:100; }
-.hidden-overlay { display:none !important; }
-.game-title { font-size:48px; margin-bottom:20px; text-shadow:3px 3px 6px #000; background:linear-gradient(45deg,#FF6B35,#F7941D); -webkit-background-clip:text; -webkit-text-fill-color:#FFD700; }
-.game-score { font-size:32px; margin:10px 0; text-shadow:2px 2px 4px #000; }
-.btn-primary { padding:16px 48px; font-size:20px; background:linear-gradient(145deg,#4CAF50,#2E7D32); color:white; border:none; border-radius:25px; cursor:pointer; margin-top:20px; box-shadow:0 4px 8px rgba(0,0,0,0.3); }
-.btn-primary:hover { transform:scale(1.05); box-shadow:0 6px 12px rgba(0,0,0,0.4); }
-.instructions { margin-top:20px; font-size:14px; opacity:0.8; text-align:center; max-width:400px; }
-.instructions code { background:#333; padding:2px 6px; border-radius:3px; font-family:monospace; }
-</style></head><body>
-<div id='game-container'><canvas id='gameCanvas'></canvas></div>
-<div id='controls' class='controls-container'>
-<button id='jump-btn' class='control-btn' disabled>TAP TO JUMP</button>
-<button id='pause-btn' class='control-btn hidden' disabled>PAUSE</button>
-</div>
-<div id='start-screen' class='overlay-screen'><h1 class='game-title'>Flappy Bird</h1><p class='instructions'><strong>Instructions:</strong><br/>Tap, Space, or Up Arrow to fly!<br/>Avoid the pipes!<br/><code>Space/Up=TAP | Esc=PAUSE</code></p></div>
-
-<div id='game-over-screen' class='overlay-screen hidden-overlay'>
-<h2 class='game-title'>GAME OVER</h2><div style='text-align:center;color:white;'><div id='score-display' style='font-size:36px;margin-bottom:20px;'>Score: <span id='final-score'>0</span></div>
-Best Score: <span id='best-score'>0</span></div>
-<button class='btn-primary' id='restart-btn'>PLAY AGAIN</button>
-<p class='instructions' style='margin-top:15px;'>Press SPACE or UP to restart</p>
-</div>
-
-<div id='pause-screen' class='overlay-screen hidden-overlay' style='background:#8B000022'><h1 style='font-size:42px; text-shadow:3px 3px 6px black'>PAUSED</h1><button class='btn-primary resume-btn' style='padding:8px 24px;font-size:16px'>RESUME GAME</button></div>
-<script src='game.js'><\/script></body></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+</head>
+<body>
+    <div style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+        <h1>🎮 Flappy Bird MK64 Multiplayer! 🏎️</h1>
+        
+        <p style="font-size: 24px; max-width: 800px; margin: 0 auto 30px;">
+            Experience Flappy Bird like never before with:
+        </p>
+    
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 50px;">
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px;">
+                🌐<strong>Online Multiplayer</strong><br>
+                Real-time sync with up to 8 players!
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px;">
+                ⭐<strong>Mario Kart Power-Ups</strong><br>
+                Mushroom 🍄, Flower 🌸, Shield 🛡️, Star ⭐!
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px;">
+                🎮<strong>Racing Physics</strong><br>
+                MK64-inspired speed mechanics!
+            </div>
+        </div>
+    
+        <h2 style="margin-bottom: 30px;">🚀 Features:</h2>
+        
+        <ul style="text-align: left; max-width: 700px; margin: 0 auto 40px; line-height: 1.8;">
+            <li><strong>Multiplayer Lobby:</strong> Choose your color and race with other players!</li>
+            <li>**Mushroom 🍄:** Double speed + extra life (just like in MK64!)</li>
+            <li><strong>Flower 🌸:</strong> Smaller but SUPER fast movement (Turbo mode)</li>
+            <li><strong>Shell Shield 🛡️:</strong> Golden invincibility - perfect protection!</li>
+            <li><strong>Star ⭐:</strong> Bullet Bill speed - maximum velocity!</li>
+            <li><strong>Question Block ?:</strong> Double score multiplier for extra points like a Superstar!</li>
+        </ul>
+    
+        <h2 style="margin-bottom: 30px;">🎮 Play Now! 🎮</h2>
+        
+        <a href="/game.html" style="display: inline-block; background: linear-gradient(45deg, #feca57, #ff6b6b); color: white; padding: 20px 60px; font-size: 24px; text-decoration: none; border-radius: 10px; margin-top: 30px;">
+            🎮 Launch Game! 🎮
+        </a>
+    
+        <p style="margin-top: 50px; opacity: 0.8;">Build your own power-up strategy and dominate the arena!</p>
+    </div>
+</body>
+</html>

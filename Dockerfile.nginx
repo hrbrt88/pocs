@@ -1,0 +1,12 @@
+FROM nginx:alpine as builder
+
+# Copy your static HTML/JS assets from the game directory
+COPY flappy-bird-web/game.html /usr/share/nginx/html/
+COPY flappy-bird-web/index.html /usr/share/nginx/html/  
+COPY flappy-bird-web/style.css /usr/share/nginx/html/
+COPY flappy-bird-web/*.js /usr/share/nginx/html/
+
+# Expose game container port
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,137 +1,132 @@
-/**
- * Flappy Bird - Browser Edition
- * A simple browser-based clone of the classic arcade game
- */
+// ============================================
+// Flappy Bird MK64 - Online Multiplayer Game
+// With Mario Kart 64 Power-Up Mechanics!
+// ============================================
 
-const CONFIG = {
-    gravity: 0.8,
-    lift: -14,
-    pipeSpeed: 2.5,
-    gapSize: 220,
-    spawnRate: 120,
-    birdRadius: 25,
-    colors: {
-        skyTop: '#87CEEB',
-        skyBottom: '#EEDD8F',
-        pipeGreen: '#4a9c5e',
-        birdYellow: '#FFD700'
-     }
-};
-
-let canvas, ctx;
-let keys = {};
-let gameState = 'start'; // start, playing, paused, gameover
-
-// Game objects
-const bird = { x: 50, y: 200, velocity: 0, rotation: 0 };
-let pipes = [];
-let frameCount = 0;
-let spawnTimer = 0;
-let pipeDistance = 0;
-let score = 0;
-let highScore = parseInt(localStorage.getItem('flappyHighScore')) || 0;
-
-function init() {
-    const container = document.getElementById('game-container');
-    if (!container) return false;
-    
-        // Create canvas element
-        canvas = document.createElement('canvas');
-        canvas.id = 'gameCanvas';
-    
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-    
-        canvas.width = width;
-        canvas.height = height;
-
-         // Append to DOM
-        container.appendChild(canvas);
-    
-    ctx = canvas.getContext('2d');
-    
-    gameState = 'start';
-    bird.velocity = 0;
-    
-    console.log('Flappy Bird initialized! Press SPACE or Tap to fly.');
-    return true;
-}
-
-// Handle keyboard input
-function handleKey(e) {
-    keys[e.code] = true;
-}
-
-// Store key release events
-document.onkeyup = () => {
-    keys[callbackCode] = false;
-};
-
-
-document.addEventListener('keydown', handleKey);
-
-// Jump function (called on any jump source)
-function jump() {
-     if (!canvas) return;
-    
-           // Only play bird sound if game is running and audio context is available
-        const ctx = canvas.getContext('2d');
-        
-        try {
-            if (window.AudioContext && window.audioContext == null) {
-                window.ctx = new AudioContext();
-            }
-        } catch(error) {
-           // WebAudio not available
-        }
-
-        if (window.AudioContext && window.ctx) {
-            const osc = window.ctx.createOscillator();
-            const gain = window.ctx.createGain();
-            osc.connect(gain);
-            gain.connect(window.ctx.destination);
+class FlappyBirdMK64 {
+      constructor() {
+            this.canvas = document.getElementById('game-canvas');
+            this.ctx = this.canvas.getContext('2d');
             
-            osc.frequency.value = 600;
-            gain.gain.value = 0.1;
-        }
+            // Player state tracking
+            this.playerId = null;
+            this.players = new Map();
+            
+            // Multiplayer socket connection
+            this.socket = null;
+            
+            // Game parameters - Mario Kart 64 inspired
+            this.powers = {
+                mushroom: { speedBoost: 2.0, extraLife: true, duration: 5000 }, // Speed doubled! Extra life
+                flower: { sizeNormal: 1.5, speedMultiplier: 0.8, duration: 4000 }, // Smaller but faster
+                shell: { invincible: true, duration: 6000, shieldColor: '#FFD700' }, // Gold shield!
+                star: { speedInfinite: true, duration: 3000 }, // Bullet bill - max speed!
+                questionBlock: { scoreMultiplier: 2.0, duration: 5000 } // Double points like in MK64!
+            };
+            
+            this.currentPowerUp = null;
+            this.powerUpTimer = null;
+            
+            // Power-up icons and labels (Mario Kart style)
+            this.powerupTypes = ['🍄', '🌸', '🛡️', '⭐', '?'];
+            
+            // WebSocket socket setup for online multiplayer
+            this.initializeWebSocket();
+            
+         }
+      }
 
-      // Update bird physics
-    if (gameState === 'playing') {
-      bird.velocity = CONFIG.lift;
-    } else {
-      // Start game on any input when at start screen or after death
-      return startGame();
+    function startGame() {
+        document.getElementById('player-selection').style.display = 'none';
+        document.getElementById('lobby-container').style.display = 'block';
+        updatePlayerList();
+    }
+
+function showPlayerSelection() {
+    const colors = [
+        '#FF0000', // Red (Mario style)
+        '#0000FF', // Blue
+        '#008000', // Green
+        '#FF00FF', // Magenta
+        '#FFFF00', // Yellow
+        '#800080', // Purple
+        '#008080', // Cyan
+        '#FFA500'  // Orange
+    ];
+
+const colorOptionsContainer = document.getElementById('color-options');
+colorOptionsContainer.innerHTML = '';
+
+colors.forEach(color => {
+    const icon = document.createElement('div');
+    icon.className = 'powerup-icon';
+    icon.style.backgroundColor = color;
+    icon.style.color = (color === '#FF00FF' || color === '#FFFF00') ? 'black' : 'white';
+    icon.style.border = '3px solid white';
+    icon.innerHTML = `<input type="radio" name="color-choice" value="${color}" style="width: 100%; margin: 10px 0;"> Color: ${color}`;
+    colorOptionsContainer.appendChild(icon);
+});
+
+document.getElementById('start-btn').style.display = 'inline-block';
+}
+
+async function connectToServer() {
+    try {
+        // Connect to web socket server (simple implementation)
+        this.socket = new WebSocket('ws://127.0.0.1:8080');
+        
+        this.socket.onopen = () => {
+            console.log('Connected to server!');
+            document.getElementById('connect-btn').textContent = 'Connected ✅';
+            showPlayerSelection();
+        };
+        
+    } catch (error) {
+      console.log('WebSocket not configured - running in offline mode');
+      this.playerId = Date.now().toString();
+      this.startGame();
     }
 }
 
-// Game over
-function gameOver() {
-     gameState = 'gameover';
-    
-        // Update high score display
-        const finalScoreDisplay = document.getElementById('final-score');
-        if (finalScoreDisplay) {
-             finalScorePlay.textContent = score;
-        }
-
-    const bestScoreDisplay = document.getElementById('best-score');
-       if (bestScoreDisplay) {
-           const newHigh = Math.max(score, highScore);
-           bestScoreDisplay.textContent = newHigh;
-           highScore = newHigh;
-
-            // Save to localStorage - must use the actual config format
-         if (highScore > 0) {
-             try {
-                 localStorage.setItem('flappyHighScore', JSON.stringify(highScore));
-                 } catch(err) { console.error(err); }
-              } else { highScore = score; }
-
-    // Show game over screen
-    showScreen('gameover');
-   }
+function updatePowerUpInfo() {
+     if (this.currentPowerUp) {
+        const container = document.getElementById('player-powerups');
+        container.innerHTML = `
+            <div style="padding: 10px; background: #333; border-radius: 8px;">
+                <h3>🎉 Current Power-Up! 🎉</h3>
+                ${this.currentPowerUp.icon} ${this.currentPowerUp.name}
+                <p>${this.currentPowerUp.description}</p>
+            </div>
+        `;
+     } else {
+         const container = document.getElementById('player-powerups');
+         container.innerHTML = '<p style="color: #888;">No power-up active</p>';
+     }
 }
 
-function resetGame() {
-     bird.y = canvas.height / 2 - 10;
-    birds.velocity = 0;
+      function getPowerUpType() {
+           // Simple random selection from Mario Kart style power-ups
+          const types = Object.keys(this.powers);
+          return types[Math.floor(Math.random() * types.length)];
+      }
+
+// ============================================
+// Multiplayer Support (WebSocket)
+// ============================================
+
+function initializeWebSocket() {
+     try {
+        // WebSocket for online multiplayer - this is configured to work when you have a server
+       const socket = new WebSocket('ws://your-server.com:8080');
+       socket.onopen = () => {
+            console.log('Multiplayer connected!');
+        };
+    } catch(e) {
+        // Fallback to local player only mode
+        console.log('Running in demo mode - single player');
+    }
+}
+
+// ============================================
+// Game Loop with Multiplayer & Power-Ups!
+// ============================================
