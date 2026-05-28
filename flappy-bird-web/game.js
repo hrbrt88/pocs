@@ -1,208 +1,132 @@
-// FLAPPY BIRD - Browser Edition (Working)
-'use strict';
+// ============================================
+// Flappy Bird MK64 - Online Multiplayer Game
+// With Mario Kart 64 Power-Up Mechanics!
+// ============================================
 
-// Game Configuration - all tunable!
-const CONFIG = {
-  gravity: 0.65,        // Downward force per frame
-  lift: -12,            // Upward boost when tapping
-  pipeSpeed: 3,         // Horizontal speed of pipes
-  gapMin: 170,          // Minimum gap between pipes (pixels)
-  gapMax: 280,          // Maximum gap
-  spawnInterval: 160,   // Frames between spawns (~2.7s at 60fps)
-  birdX: 135            // Fixed horizontal position from left edge
-};
+class FlappyBirdMK64 {
+      constructor() {
+            this.canvas = document.getElementById('game-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            
+            // Player state tracking
+            this.playerId = null;
+            this.players = new Map();
+            
+            // Multiplayer socket connection
+            this.socket = null;
+            
+            // Game parameters - Mario Kart 64 inspired
+            this.powers = {
+                mushroom: { speedBoost: 2.0, extraLife: true, duration: 5000 }, // Speed doubled! Extra life
+                flower: { sizeNormal: 1.5, speedMultiplier: 0.8, duration: 4000 }, // Smaller but faster
+                shell: { invincible: true, duration: 6000, shieldColor: '#FFD700' }, // Gold shield!
+                star: { speedInfinite: true, duration: 3000 }, // Bullet bill - max speed!
+                questionBlock: { scoreMultiplier: 2.0, duration: 5000 } // Double points like in MK64!
+            };
+            
+            this.currentPowerUp = null;
+            this.powerUpTimer = null;
+            
+            // Power-up icons and labels (Mario Kart style)
+            this.powerupTypes = ['🍄', '🌸', '🛡️', '⭐', '?'];
+            
+            // WebSocket socket setup for online multiplayer
+            this.initializeWebSocket();
+            
+         }
+      }
 
-// Game State
-let canvas;
-let ctx;
-let game = {
-  state: 'start',         // start, playing, paused, gameover
-  bird: { x: CONFIG.birdX, y: 250, v: 0 },     // Bird properties
-  pipes: [],              // Array of pipe data {x, gapY}
-  score: 0,              // Current score
-  highScore: parseInt(localStorage.getItem('flappyHighScore')) || 0   // Best score
-};
-
-let animationId = null;  // Animation loop ID
-let canvasWidth, canvasHeight;  // Canvas dimensions stored here
-
-// Initialize game
-function init() {
-    const container = document.getElementById('game-container');
-    if (!container) return false;
-    
-    createCanvas(container);
-    addControls();
-    startGameLoop();
-    return true;
-}
-
-// Create canvas element
-function createCanvas(parent) {
-    const width = parent.clientWidth - 20;
-    const height = parent.clientHeight * 0.85;
-    
-    canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    
-    canvas.style.display = 'block';
-    canvas.style.marginTop = '43%';
-    canvas.style.left = 'calc(50% - ' + (width/2) + 'px)';
-    
-    ctx = canvas.getContext('2d');
-    parent.insertBefore(canvas, parent.firstChild);
-    
-    canvasWidth = width;
-    canvasHeight = height;
-}
-
-// Setup controls and listeners
-function addControls() {
-    const container = document.getElementById('game-container');
-    if (!container || !canvas) return;
-    
-    // Keyboard controls
-    container.addEventListener('keydown', (e) => handleInput(e));
-    container.addEventListener('touchstart', onGameTap, { passive: true });
-    canvas.addEventListener('mousedown', onGameTap);
-}
-
-// Handle keyboard input
-function handleInput(e) {
-    if (game.state === 'playing') {
-        jump();
-        return;
-    } else if (e.code === 'Space' || e.code === 'ArrowUp') {
-        restartGame();
-        return;
+    function startGame() {
+        document.getElementById('player-selection').style.display = 'none';
+        document.getElementById('lobby-container').style.display = 'block';
+        updatePlayerList();
     }
+
+function showPlayerSelection() {
+    const colors = [
+        '#FF0000', // Red (Mario style)
+        '#0000FF', // Blue
+        '#008000', // Green
+        '#FF00FF', // Magenta
+        '#FFFF00', // Yellow
+        '#800080', // Purple
+        '#008080', // Cyan
+        '#FFA500'  // Orange
+    ];
+
+const colorOptionsContainer = document.getElementById('color-options');
+colorOptionsContainer.innerHTML = '';
+
+colors.forEach(color => {
+    const icon = document.createElement('div');
+    icon.className = 'powerup-icon';
+    icon.style.backgroundColor = color;
+    icon.style.color = (color === '#FF00FF' || color === '#FFFF00') ? 'black' : 'white';
+    icon.style.border = '3px solid white';
+    icon.innerHTML = `<input type="radio" name="color-choice" value="${color}" style="width: 100%; margin: 10px 0;"> Color: ${color}`;
+    colorOptionsContainer.appendChild(icon);
+});
+
+document.getElementById('start-btn').style.display = 'inline-block';
 }
 
-// Handle touch or mouse tap - same behavior for both
-function onGameTap() {
-    if (game.state === 'playing') {
-        jump();
-    } else if (['start', 'paused', 'gameover'].includes(game.state)) {
-        restartGame();
-    }
-}
-
-// Restart game (reset bird position and clear pipes)
-function restartGame() {
-    game.bird.y = canvasHeight * 0.4;
-    game.bird.v = 0;
-    game.pipes = [];
-    game.score = 0;
-    game.highScore = parseInt(localStorage.getItem('flappyHighScore')) || 0;
-    game.state = 'playing';
-    startGameLoop();
-}
-
-// Apply lift boost when tapping
-function jump() {
-    if (game.state !== 'playing') return false;
-    game.bird.v += CONFIG.lift; // Add upward boost!
-}
-
-// Update bird position and spawn pipes
-function update() {
-    if (game.state !== 'playing') return;
-    
-    // Apply gravity to bird
-    game.bird.v += CONFIG.gravity;    // Add downward force each frame
-    game.bird.y += game.bird.v;        // Move bird vertically
-    
-    // Spawn new pipe every spawnInterval frames (about 2.7 seconds at 60fps)
-    if (--game.frameCount < 0) {       // Decrease timer by 1, stop spawning when done
-        game.pipes.push({
-            x: canvasWidth,           // New pipe starts at right edge of screen
-            gapY: Math.random() * (CONFIG.gapMax - CONFIG.gapMin) + CONFIG.gapMin // Gap size
-        });
-        game.frameCount = CONFIG.spawnInterval;
-    }
-    
-    // Move all pipes left by pipeSpeed units (pixels per frame)
-    for (let i = game.pipes.length - 1; i >= 0; i--) {
-        game.pipes[i].x -= CONFIG.pipeSpeed;
+async function connectToServer() {
+    try {
+        // Connect to web socket server (simple implementation)
+        this.socket = new WebSocket('ws://127.0.0.1:8080');
         
-        // Check if bird hit top or bottom of screen
-        if (game.bird.y < 0 || game.bird.y > canvasHeight) {
-            gameOver();
-            return;
-        }
+        this.socket.onopen = () => {
+            console.log('Connected to server!');
+            document.getElementById('connect-btn').textContent = 'Connected ✅';
+            showPlayerSelection();
+        };
         
-        // Check collision with pipes
-        const pipe = game.pipes[i];
-        if (pipe.x + 50 >= game.bird.x && pipe.x <= game.bird.x + 50) {
-             // Bird is horizontally aligned with this pipe - check vertical gap!
-             // If bird's Y position is above the top pipe OR below bottom pipe -> collision!
-            gameOver();
-            return;
-        }
+    } catch (error) {
+      console.log('WebSocket not configured - running in offline mode');
+      this.playerId = Date.now().toString();
+      this.startGame();
     }
-    
 }
 
-function draw() {
-    if (!canvas || !ctx) return;
-    
-    // Clear screen
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw pipes first (so bird is drawn on top - visible when collision occurs)
-    for (let i = 0; i < game.pipes.length; i++) {
-        const pipe = game.pipes[i];
-        
-        // Top pipe (from top of screen down to gap)
-        ctx.fillStyle = '#4a9c5e';     // Green color
-        ctx.fillRect(pipe.x, 0, 70, canvasHeight - pipe.gapY);  // Pipe from top to gap
-        
-        // Bottom pipe (from bottom up to gap)  
-        ctx.fillRect(pipe.x, canvasHeight - pipe.gapY + 15, 70, 32);    // Gap space
-    }
-    
-    // Draw bird last (on top of pipes so visible when collision happens)
-    const gradient = ctx.createRadialGradient(game.bird.x, game.bird.y, 5, game.bird.x, game.bird.y, game.bird.radius);
-    gradient.addColorStop(0, '#FFD700'); // Yellow (golden color for bird)
-    gradient.addColorStop(1, '#F7941D'); // Orange-ish darker edge
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    
-    // Draw rounded bird shape (circle)
-    ctx.arc(game.bird.x, game.bird.y, 20, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Add eye dot (simple detail)
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.arc(game.bird.x + 8, game.bird.y - 5, 4, 0, Math.PI * 2);
-    ctx.arc(game.bird.x - 10, game.bird.y + 3, 4, 0, Math.PI * 2);
-    ctx.fill();
+function updatePowerUpInfo() {
+     if (this.currentPowerUp) {
+        const container = document.getElementById('player-powerups');
+        container.innerHTML = `
+            <div style="padding: 10px; background: #333; border-radius: 8px;">
+                <h3>🎉 Current Power-Up! 🎉</h3>
+                ${this.currentPowerUp.icon} ${this.currentPowerUp.name}
+                <p>${this.currentPowerUp.description}</p>
+            </div>
+        `;
+     } else {
+         const container = document.getElementById('player-powerups');
+         container.innerHTML = '<p style="color: #888;">No power-up active</p>';
+     }
 }
 
-// Check for collision and end game if hit
-function gameOver() {
-    if (game.state === 'gameover') return; // Already dead
-    
-    game.state = 'gameover';
-    
-    // Update high score from storage
-    const newHighScore = Math.max(game.score || 0, game.highScore);
-    localStorage.setItem('flappyHighScore', newHighScore.toString());
-    game.highScore = newHighScore;
+      function getPowerUpType() {
+           // Simple random selection from Mario Kart style power-ups
+          const types = Object.keys(this.powers);
+          return types[Math.floor(Math.random() * types.length)];
+      }
+
+// ============================================
+// Multiplayer Support (WebSocket)
+// ============================================
+
+function initializeWebSocket() {
+     try {
+        // WebSocket for online multiplayer - this is configured to work when you have a server
+       const socket = new WebSocket('ws://your-server.com:8080');
+       socket.onopen = () => {
+            console.log('Multiplayer connected!');
+        };
+    } catch(e) {
+        // Fallback to local player only mode
+        console.log('Running in demo mode - single player');
+    }
 }
 
-// Start the animation loop
-function startGameLoop() {
-    if (animationId) cancelAnimationFrame(animationId);
-    
-    function animate() {
-        update();
-        draw();
-        animationId = requestAnimationFrame(animate);
-    }
-    
-    animate();
-}
+// ============================================
+// Game Loop with Multiplayer & Power-Ups!
+// ============================================

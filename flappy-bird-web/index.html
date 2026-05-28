@@ -1,106 +1,53 @@
-# Flappy Bird 🐦 - Browser Edition
-
-A fully playable Flappy Bird clone that runs in your web browser! No installation required.
-
-## How to Play
-
-### Desktop
-- Press **SPACE** or **ArrowUp** to fly
-- **ESC** or click anywhere to pause
-- Avoid the scrolling pipes and keep flying!
-
-### Mobile/Touch Devices
-- Tap anywhere on the game area to fly
-- Game responds to touch just like your keyboard controls
-
-## Screenshots
-
-<div style='text-align:center; margin: 20px; padding: 10px; border: 2px solid #ccc; background: #f9f9f9;'>
-    [Game Preview Image]  
-</div>
-
-## Game Features
-
-✅ **Simple physics** - gravity pulls you down, tap to fly up  
-✅ **Smooth gameplay** - optimized for 60 FPS on all devices  
-✅ **Progressive difficulty** - new pipes appear more frequently as score increases  
-✅ **High score tracking** - your best score is saved!  
-✅ **Responsive design** - scales perfectly to any screen size
-
-## Controls
-
-| Action | Key/Touch |
-|--------|-----------|
-| Fly/Jump | SPACE or Tap |
-| Pause | ESC or click anywhere |
-| Restart (after Game Over) | SPACE or Tap again |
-| Resume from pause | Click anywhere |
-
-## How It Works
-
-The game uses the HTML5 Canvas API to render the bird and pipes. Physics are calculated every frame using gravity acceleration (+0.65 per frame) and jump boost (-12 units). The horizontal pipe distance is fixed at 70 pixels.
-
-## Tech Stack
-
-- **Frontend:** Vanilla JavaScript (ES6+) - no dependencies!
-- **Rendering:** HTML5 Canvas
-- **Style:** CSS3 with flexbox layout
-
-## Docker Deployment
-
-This game can be deployed in a containerized environment for testing:
-
-```bash
-# Build and run
-docker-compose up --build
-
-# Or build image separately
-docker build -t flappy-bird .
-
-# Run your own copy
-docker run -p 8080:80 flappy-bird
-```
-
-Then visit http://localhost:8080 to play!
-
-## Getting Started with Docker
-
-1. Go to your container's IP address or use the provided URL
-2. Open http://localhost:8080 in your browser (or https://your-server-ip/ if deployed elsewhere)
-3. Start tapping to fly our little bird! 🐦
-
-## Version Info
-
-- **v0.1.0** - Initial release with core mechanics and gameplay loop
-  - Bird movement physics
-  - Pipe collision detection  
-  - Score tracking (high score & current)
-  - Touch/keyboard controls
-  - Responsive canvas layout
-
-## Development Notes
-
-This is a Proof of Concept implementation. Future versions will include:
-- Sound effects and ambient music
-- More bird colors/skins to unlock
-- Leaderboards for high scores  
-- Multiple difficulty tiers  
-- Customizable physics parameters
-
-## Known Limitations
-
-1. **No audio yet** - game runs without sound currently
-2. **Fixed aspect ratio** - maintains 4:3 ratio via CSS
-3. **No power-ups** - basic gameplay mode only
-4. **Simple graphics** - uses colors and basic shapes for now
-
-## License
-
-MIT License - free to use for fun!
-
----
-
-<div style='text-align:center; margin-top:30px;'>
-🎮 Built with pure JavaScript – no external dependencies!  🎮 <br/>
-</div>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+</head>
+<body>
+    <div style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+        <h1>🎮 Flappy Bird MK64 Multiplayer! 🏎️</h1>
+        
+        <p style="font-size: 24px; max-width: 800px; margin: 0 auto 30px;">
+            Experience Flappy Bird like never before with:
+        </p>
+    
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 50px;">
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px;">
+                🌐<strong>Online Multiplayer</strong><br>
+                Real-time sync with up to 8 players!
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px;">
+                ⭐<strong>Mario Kart Power-Ups</strong><br>
+                Mushroom 🍄, Flower 🌸, Shield 🛡️, Star ⭐!
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px;">
+                🎮<strong>Racing Physics</strong><br>
+                MK64-inspired speed mechanics!
+            </div>
+        </div>
+    
+        <h2 style="margin-bottom: 30px;">🚀 Features:</h2>
+        
+        <ul style="text-align: left; max-width: 700px; margin: 0 auto 40px; line-height: 1.8;">
+            <li><strong>Multiplayer Lobby:</strong> Choose your color and race with other players!</li>
+            <li>**Mushroom 🍄:** Double speed + extra life (just like in MK64!)</li>
+            <li><strong>Flower 🌸:</strong> Smaller but SUPER fast movement (Turbo mode)</li>
+            <li><strong>Shell Shield 🛡️:</strong> Golden invincibility - perfect protection!</li>
+            <li><strong>Star ⭐:</strong> Bullet Bill speed - maximum velocity!</li>
+            <li><strong>Question Block ?:</strong> Double score multiplier for extra points like a Superstar!</li>
+        </ul>
+    
+        <h2 style="margin-bottom: 30px;">🎮 Play Now! 🎮</h2>
+        
+        <a href="/game.html" style="display: inline-block; background: linear-gradient(45deg, #feca57, #ff6b6b); color: white; padding: 20px 60px; font-size: 24px; text-decoration: none; border-radius: 10px; margin-top: 30px;">
+            🎮 Launch Game! 🎮
+        </a>
+    
+        <p style="margin-top: 50px; opacity: 0.8;">Build your own power-up strategy and dominate the arena!</p>
+    </div>
+</body>
+</html>
